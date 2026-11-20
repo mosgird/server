@@ -1,0 +1,34 @@
+name: semver-tag
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semver-tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Pinned to full commit SHAs. Tags are kept as comments for humans.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The rules are kept once, in the protocol repository, at a pinned commit.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: mosgird/protocols
+          ref: ccc9eed0b5fb6f5c2c8503500de4f1c56fc83daf
+          path: protocols
+          persist-credentials: false
+
+      - name: Check release tag name and ancestry
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python3 protocols/scripts/check_semver_tag.py "$TAG"

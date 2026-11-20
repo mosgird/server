@@ -1,0 +1,13 @@
+# Local agent and editor state. Never publish.
+.claude/
+.codex/
+.cursor/
+.aider*
+.continue/
+.windsurf/
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc

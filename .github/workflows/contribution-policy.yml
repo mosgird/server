@@ -1,0 +1,38 @@
+name: contribution-policy
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contribution-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Pinned to full commit SHAs. Tags are kept as comments for humans.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The rules are kept once, in the protocol repository, at a pinned commit.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: mosgird/protocols
+          ref: ae64e6d715b92adce80d0beeb5f34b84b127ee6e
+          path: protocols
+          persist-credentials: false
+
+      - name: Write pull request description to a file
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr_body.md"
+
+      - name: Check contribution policy
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 protocols/scripts/check_contributions.py "$BASE_SHA" "$HEAD_SHA" "$RUNNER_TEMP/pr_body.md"
